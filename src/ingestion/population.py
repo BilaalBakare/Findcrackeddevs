@@ -24,3 +24,6 @@ query = """
     GROUP BY login, actor_id
 """
 df = client.query(query).to_dataframe()
+
+
+df.to_parquet('../../data/raw/archive.parquet', index=False)
