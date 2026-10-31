@@ -1,7 +1,10 @@
+from pathlib import Path
 import pandas as pd
 import numpy as np
 
-df = pd.read_parquet('../../data/raw/archive.parquet')
+ROOT = Path(__file__).resolve().parents[2]
+
+df = pd.read_parquet(ROOT / "data" / "raw" / "archive.parquet")
 
 active = df[(df['active_days'] >= 3) & (df['n_events'] >= 5) & (df['n_events'] <= 400)]
 
@@ -19,7 +22,6 @@ conditions = [
 choices = ["pilot", "main", "reserve", "control"]
 active["bucket_cond"] = np.select(conditions, choices, default="unknown")
 
-
-pool = active[active['bucket_cond'] == 'main']
-
-pool.to_parquet('../../data/raw/pool.parquet', index=False)
+pool = active[active["bucket_cond"].isin(["pilot", "main"])]
+(ROOT / "data" / "processed").mkdir(parents=True, exist_ok=True)
+pool.to_parquet(ROOT / "data" / "processed" / "pool.parquet", index=False)
