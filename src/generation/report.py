@@ -16,7 +16,8 @@ from src.processing.build_vector_database import search
 load_dotenv()
 
 API_KEY = os.getenv("GROQ_API_KEY")
-MODEL = os.getenv("LLM_MODEL", "llama-3.3-70b-versatile")
+MODEL = 'openai/gpt-oss-20b'
+print("using model:", MODEL)
 URL = "https://api.groq.com/openai/v1/chat/completions"
 
 TOP_K = 5
