@@ -3,217 +3,199 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>FindMeTheCrackedDevs: a RAG search engine for GitHub developers</title>
+<title>FindMeTheCrackedDevs</title>
 <style>
-:root{--bg:#f6f7fb;--surface:#fff;--surface2:#eef0f7;--text:#14172b;--muted:#5b6078;--line:#dde0ee;--accent:#5b4bff;--accent2:#00b8a9;--warn:#b45309;--warnbg:#fff4e0;--code:#0f1226;--codetext:#d6dbff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b0d1a;--surface:#13162b;--surface2:#1b1f3a;--text:#eceefc;--muted:#9aa0c3;--line:#272c4f;--accent:#8b7dff;--accent2:#2fe0cf;--warn:#fbbf24;--warnbg:#2a2110;--code:#070812;--codetext:#c9d0ff}}
-:root[data-theme="dark"]{--bg:#0b0d1a;--surface:#13162b;--surface2:#1b1f3a;--text:#eceefc;--muted:#9aa0c3;--line:#272c4f;--accent:#8b7dff;--accent2:#2fe0cf;--warn:#fbbf24;--warnbg:#2a2110;--code:#070812;--codetext:#c9d0ff}
-html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+:root{--bg:#050505;--s1:#0d0d0d;--s2:#151515;--line:#222;--text:#ededed;--muted:#858585;--dim:#5a5a5a;color-scheme:dark}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
-nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-nav .wrap{display:flex;align-items:center;gap:16px;height:56px}
-nav b{font-size:15px}nav a{color:var(--muted);text-decoration:none;font-size:14px}nav a:hover{color:var(--text)}
-.links{display:flex;gap:16px;margin-left:auto;overflow-x:auto;white-space:nowrap}
-.hero{padding:72px 0 40px;text-align:center}
-.pill{display:inline-block;padding:5px 12px;border:1px solid var(--line);border-radius:99px;font-size:12px;color:var(--muted);background:var(--surface);margin:0 4px 8px}
-.pill.w{color:var(--warn);background:var(--warnbg);border-color:transparent}
-h1{font-size:clamp(34px,6.5vw,62px);line-height:1.05;margin:14px 0;letter-spacing:-.03em}
-h1 span{background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
-.lead{max-width:680px;margin:0 auto 28px;color:var(--muted);font-size:18px}
-.search{max-width:720px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:0 20px 60px -30px var(--accent);text-align:left}
-.row{display:flex;gap:10px}
-input{flex:1;min-width:0;padding:13px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text);font:inherit}
-button{font:inherit;cursor:pointer}
-.go{padding:0 20px;border:0;border-radius:10px;background:var(--accent);color:#fff;font-weight:600}
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-.chip{padding:6px 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface2);color:var(--text);font-size:13px}
-.chip:hover{border-color:var(--accent)}
-.note{margin:12px 2px 0;font-size:13px;color:var(--warn);background:var(--warnbg);padding:9px 12px;border-radius:9px}
-section{padding:52px 0}
-h2{font-size:30px;letter-spacing:-.02em;margin:0 0 8px}
-.sub{color:var(--muted);margin:0 0 28px;max-width:680px}
-.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px}
-.card h3{margin:0 0 6px;font-size:16px}.card p{margin:0;color:var(--muted);font-size:14.5px}
-.stat{font-size:34px;font-weight:700;letter-spacing:-.02em;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
-.card .lab{color:var(--muted);font-size:13px}
-.report{margin-top:18px;display:none}
-.report.on{display:block}
-.res{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px}
-.res h4{margin:0 0 2px;font-size:15px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.tag{font-size:11px;padding:2px 8px;border-radius:99px;font-weight:600}
-.strong{background:#d7f7ef;color:#0a6b5a}.partial{background:#fff0cf;color:#8a5a00}.weak{background:#ffe0e0;color:#9b1c1c}
-.res p{margin:6px 0 0;font-size:14.5px;color:var(--muted)}
-.flow{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));counter-reset:s}
-.step{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;font-size:14px;counter-increment:s}
-.step::before{content:counter(s);display:block;width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;text-align:center;font-size:13px;line-height:24px;margin-bottom:8px}
-.step b{display:block}.step span{color:var(--muted);font-size:13px}
-.scroll{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:14.5px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
-th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-weight:600;font-size:13px}
-pre{background:var(--code);color:var(--codetext);padding:18px;border-radius:12px;overflow-x:auto;font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;margin:0}
-.ph{border:1px dashed var(--accent);border-radius:6px;padding:0 6px;color:var(--accent)}
-ul{padding-left:20px;color:var(--muted)}li{margin:5px 0}
-.btn{display:inline-block;padding:11px 18px;border-radius:10px;background:var(--accent);color:#fff;text-decoration:none;font-weight:600;margin:6px 8px 0 0}
-.btn.o{background:transparent;color:var(--text);border:1px solid var(--line)}
-footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--muted);font-size:13.5px}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{display:flex;flex-direction:column;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+header{display:flex;align-items:center;gap:16px;padding:0 24px;height:56px;border-bottom:1px solid var(--line);flex:none}
+header b{font-weight:600;letter-spacing:-.01em;white-space:nowrap}
+.tabs{display:flex;gap:4px;margin-left:auto}
+.tab{background:none;border:0;color:var(--muted);padding:8px 12px;border-radius:8px;font:inherit;font-size:13.5px;cursor:pointer;white-space:nowrap}
+.tab:hover{color:var(--text)}.tab[aria-selected="true"]{color:var(--text);background:var(--s2)}
+.viewport{flex:1;min-height:0;overflow:hidden;position:relative}
+.track{display:flex;height:100%;transition:transform .5s cubic-bezier(.65,0,.2,1)}
+.slide{flex:0 0 100%;height:100%;overflow-y:auto;padding:48px 24px 90px}
+.in{max-width:860px;margin:0 auto}
+h1{font-size:clamp(30px,5vw,48px);line-height:1.1;letter-spacing:-.035em;margin:0 0 12px;font-weight:650}
+h2{font-size:clamp(26px,4vw,36px);letter-spacing:-.03em;margin:0 0 8px;font-weight:650}
+.lead{color:var(--muted);max-width:620px;margin:0 0 26px}
+.box{display:flex;gap:8px;background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:8px}
+.box:focus-within{border-color:#444}
+input{flex:1;min-width:0;background:none;border:0;outline:0;color:var(--text);font:inherit;padding:10px 12px}
+input::placeholder{color:var(--dim)}
+.go{background:var(--text);color:#000;border:0;border-radius:9px;padding:0 20px;font:inherit;font-weight:600;cursor:pointer}
+.go:disabled{opacity:.4;cursor:wait}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0}
+.chip{background:none;border:1px solid var(--line);color:var(--muted);border-radius:99px;padding:5px 12px;font:inherit;font-size:13px;cursor:pointer}
+.chip:hover{color:var(--text);border-color:#444}
+#report{margin-top:20px;display:none}#report.on{display:block}
+.msg{color:var(--muted);font-size:14px;padding:6px 2px}
+.res{background:var(--s1);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px}
+.res h4{margin:0;font-size:15px;font-weight:600;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.res a{color:var(--text);text-underline-offset:3px}
+.res p{margin:6px 0 0;color:var(--muted);font-size:14px}
+.tag{font-size:11px;padding:2px 8px;border-radius:99px;border:1px solid var(--line);font-weight:500}
+.strong{color:#5fd4a0;border-color:#1d4a38}.partial{color:#e0b64f;border-color:#4a3c14}.weak{color:#e07a7a;border-color:#4a1d1d}.unknown{color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:36px}
+.stat{background:var(--s1);padding:16px 18px}
+.stat b{display:block;font-size:26px;letter-spacing:-.03em;font-weight:650}
+.stat span{color:var(--muted);font-size:12.5px;line-height:1.4;display:block}
+.cards{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin:24px 0}
+.card{background:var(--s1);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card h3{margin:0 0 4px;font-size:14.5px;font-weight:600}.card p{margin:0;color:var(--muted);font-size:13.5px}
+.hw{font-size:13.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
+.hw b{color:var(--text);font-weight:600}
+.ph{border:1px dashed #444;border-radius:5px;padding:0 6px;color:var(--muted)}
+ul{margin:8px 0 0;padding-left:18px;color:var(--muted);font-size:13.5px}li{margin:3px 0}
+.btns{margin-top:6px}
+.btn{display:inline-block;padding:10px 18px;border-radius:10px;background:var(--text);color:#000;text-decoration:none;font-weight:600;font-size:14px;margin:0 8px 8px 0}
+.btn.o{background:none;color:var(--text);border:1px solid var(--line)}
+.fine{margin-top:22px;color:var(--dim);font-size:12.5px;max-width:700px}
+.nav{position:absolute;left:0;right:0;bottom:calc(14px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;align-items:center;gap:14px;pointer-events:none}
+.nav>*{pointer-events:auto}
+.arrow{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--s1);color:var(--text);cursor:pointer;font-size:16px}
+.arrow:hover{border-color:#555}.arrow:disabled{opacity:.25;cursor:default}
+.dots{display:flex;gap:8px}
+.dot{width:7px;height:7px;border-radius:50%;border:0;padding:0;background:#333;cursor:pointer}
+.dot.on{background:var(--text);width:20px;border-radius:4px}
+@media(max-width:620px){header{padding:0 14px}header b{font-size:14px}.tab{padding:6px 8px;font-size:12.5px}.slide{padding:32px 16px 90px}}
+@media(prefers-reduced-motion:reduce){.track{transition:none}}
 </style>
 </head>
 <body>
-<nav><div class="wrap"><b>🔎 FindMeTheCrackedDevs</b><div class="links"><a href="#demo">Demo</a><a href="#how">How it works</a><a href="#limits">Constraints</a><a href="#collab">Collaborate</a><a href="#structure">Structure</a></div></div></nav>
+<header>
+  <b>FindMeTheCrackedDevs</b>
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab">Search</button>
+    <button class="tab" role="tab">Constraints</button>
+    <button class="tab" role="tab">Contribute</button>
+  </div>
+</header>
 
-<header class="hero"><div class="wrap">
-<span class="pill w">Professional software demo</span><span class="pill">Early build</span><span class="pill">Open source</span><span class="pill">Built on free tiers</span>
-<h1>Describe the developer you need. <span>Get evidence, not hype.</span></h1>
-<p class="lead">A retrieval-augmented generation (RAG) search engine over public GitHub developers. Recruiters write what they are looking for in plain English, and the system returns a short, source-cited report on the best matches.</p>
+<main class="viewport">
+<div class="track" id="track">
 
-<div class="search" id="demo">
-<div class="row"><input id="q" aria-label="Recruiter request" placeholder="e.g. a developer experienced in machine learning and large-scale systems"><button class="go" id="run">Preview</button></div>
-<div class="chips"><button class="chip">React frontend with Tailwind</button><button class="chip">Rust systems programmer</button><button class="chip">Builds Discord bots</button><button class="chip">Machine learning engineer</button></div>
-<div class="note"><b>Honest status:</b> this page is a showcase and does not call the live search API yet. The report below is an illustrative example of the output format, using placeholder names. It is not real data about real people.</div>
-<div class="report" id="report">
-<div class="res"><h4>1. example-dev-a <span class="tag strong">strong fit</span></h4><p>Maintains a component library built with React and Tailwind (see: ui kit) and a dashboard template (see: admin panel). Both are recent and have descriptions.</p></div>
-<div class="res"><h4>2. example-dev-b <span class="tag partial">partial fit</span></h4><p>Several React projects, but no repository mentions Tailwind (see: portfolio starter). Relevant to React, unproven for the styling requirement.</p></div>
-<div class="res"><h4>3. example-dev-c <span class="tag weak">weak fit</span></h4><p>Mostly mobile work. One web repository exists, with too little detail to judge.</p></div>
-</div>
-</div>
-</div></header>
-
-<section id="numbers"><div class="wrap">
-<h2>The project in numbers</h2><p class="sub">Small on purpose. Every figure is measured from this build, and every limit is listed further down.</p>
-<div class="grid">
-<div class="card"><div class="stat">~1,800</div><div class="lab">developers in the search index</div></div>
-<div class="card"><div class="stat">1.03M</div><div class="lab">active-account rows analysed to build the corpus</div></div>
-<div class="card"><div class="stat">17</div><div class="lab">developer domains used for stratified sampling</div></div>
-<div class="card"><div class="stat">384</div><div class="lab">dimensions per embedding vector</div></div>
-</div></div></section>
-
-<section id="how"><div class="wrap">
-<h2>How it works</h2><p class="sub">The pipeline is written by hand without LangChain, so every stage is visible and testable.</p>
-<div class="flow">
-<div class="step"><b>Find</b><span>Active accounts from GH Archive via BigQuery, bots removed</span></div>
-<div class="step"><b>Sample</b><span>Hash buckets for a reproducible pool, then stratified quotas per domain</span></div>
-<div class="step"><b>Fetch</b><span>Repo lists from the GitHub API with retries and rate-limit handling</span></div>
-<div class="step"><b>Embed</b><span>One text document per developer, BGE-small vectors</span></div>
-<div class="step"><b>Retrieve</b><span>Nearest-neighbour search in Chroma, with metadata filters</span></div>
-<div class="step"><b>Generate</b><span>LLM writes a JSON report that must cite repositories; links come from metadata</span></div>
-</div></div></section>
-
-<section id="limits"><div class="wrap">
-<h2>Constraints, stated plainly</h2><p class="sub">This is a learning project running on free infrastructure and a personal laptop. These limits shape what the demo can and cannot do.</p>
-<div class="grid">
-<div class="card"><h3>Small, biased corpus</h3><p>Only ~1,800 developers, drawn from accounts active in one 8-day window. The best person for your query may simply not be indexed.</p></div>
-<div class="card"><h3>Keyword-based labels</h3><p>Domains are assigned by a hand-written keyword dictionary. It is audited only lightly and misfiles some people. About 46% of the sampled pool was unclassifiable.</p></div>
-<div class="card"><h3>“Relevant” is not “best”</h3><p>Search measures similarity to your words. There is no quality or seniority ranking yet, so a vague query such as “best developer” returns people who sound relevant.</p></div>
-<div class="card"><h3>Dense retrieval only</h3><p>No keyword (BM25) hybrid search and no reranker yet, so exact technologies such as “Tailwind” can be missed or blurred.</p></div>
-<div class="card"><h3>Thin documents</h3><p>Profiles are built from repository names, descriptions, topics and languages. READMEs and bios are not ingested yet.</p></div>
-<div class="card"><h3>Public data, partial picture</h3><p>Private work, employer code and offline skills are invisible. Stars favour visibility, not skill. Treat every report as a lead, not a verdict.</p></div>
-<div class="card"><h3>LLM can be wrong</h3><p>The model is instructed to use only retrieved text and to cite repositories, but it can still misread. Always verify on the linked profile.</p></div>
-<div class="card"><h3>Free-tier limits</h3><p>The LLM and hosting run on free plans with rate limits, cold starts and model changes. Expect slow or unavailable moments.</p></div>
-</div>
-
-<h3 style="margin:34px 0 10px">Hardware this was built on</h3>
-<div class="scroll"><table>
-<tr><th>Resource</th><th>Value</th><th>Consequence</th></tr>
-<tr><td>RAM</td><td>7.6 GB total, often under 2 GB free</td><td>The bulk embedding job was killed twice by the Linux out-of-memory killer (a Python process at 3.8 GB). Embedding now runs in small batches.</td></tr>
-<tr><td>Swap</td><td>4 GB</td><td>Heavy use slows everything down.</td></tr>
-<tr><td>Compute</td><td>CPU only, no GPU used</td><td>Small embedding model (BGE-small); no local LLM; no large-scale re-embedding.</td></tr>
-<tr><td>OS and runtime</td><td>Ubuntu Linux, Python 3.12</td><td>Reproducible with a virtual environment and a pinned requirements file.</td></tr>
-<tr><td>Cloud</td><td>BigQuery free tier, GitHub API (5,000 requests per hour), free LLM tier</td><td>Ingestion is rationed: roughly 2,500 developers per hour at best.</td></tr>
-</table></div>
+<section class="slide"><div class="in">
+  <h1>Describe the developer you need.</h1>
+  <p class="lead">Plain-English search over a sample of public GitHub developers. Every result links to the real profile and comes with cited evidence.</p>
+  <div class="box">
+    <input id="q" maxlength="300" aria-label="Recruiter request" placeholder="e.g. machine learning engineer with large-scale systems experience">
+    <button class="go" id="run">Search</button>
+  </div>
+  <div class="chips">
+    <button class="chip">React frontend with Tailwind</button>
+    <button class="chip">Rust systems programmer</button>
+    <button class="chip">Builds Discord bots</button>
+    <button class="chip">Machine learning engineer</button>
+  </div>
+  <div id="report" aria-live="polite"></div>
+  <div class="stats">
+    <div class="stat"><b>~1,800</b><span>developers in the index</span></div>
+    <div class="stat"><b>1.03M</b><span>active-account rows analysed</span></div>
+    <div class="stat"><b>17</b><span>developer domains sampled</span></div>
+    <div class="stat"><b>384</b><span>dimensions per embedding</span></div>
+  </div>
 </div></section>
 
-<section id="collab"><div class="wrap">
-<h2>Collaborate and contribute</h2><p class="sub">Pull requests are welcome from anyone. Open an issue first for large changes, so effort is not wasted.</p>
-<div class="grid">
-<div class="card"><h3>About the maintainer</h3>
-<p><span class="ph">Your name</span> · <span class="ph">your role or school</span><br>
-<span class="ph">1–2 lines on your background</span><br>
-GitHub: <span class="ph">github.com/your-username</span><br>
-Contact: <span class="ph">email or LinkedIn</span></p></div>
-<div class="card"><h3>Skills used in this project</h3><p>Python, SQL and BigQuery, REST APIs, data sampling, embeddings and vector search, prompt design and grounding, FastAPI, debugging under memory limits.</p></div>
-<div class="card"><h3>Help that would move it forward</h3>
-<ul><li>GPU or larger-memory compute for re-embedding</li><li>Hybrid search and a cross-encoder reranker</li><li>Evaluation set and labelling (recall@k, MRR)</li><li>Quality-signal ranking from merged PRs</li><li>README and bio ingestion</li><li>Hosting, caching and rate limiting</li></ul></div>
+<section class="slide"><div class="in">
+  <h2>Constraints</h2>
+  <p class="lead">A demo built on free tiers and one laptop. These limits shape every result you see.</p>
+  <div class="cards">
+    <div class="card"><h3>Small, biased corpus</h3><p>~1,800 developers from accounts active in one 8-day window. The best match may not be indexed.</p></div>
+    <div class="card"><h3>Keyword labels</h3><p>Domains come from a hand-written dictionary with light auditing. About 46% of the sampled pool was unclassifiable.</p></div>
+    <div class="card"><h3>Relevant, not best</h3><p>Search measures similarity to your words. There is no quality or seniority ranking yet.</p></div>
+    <div class="card"><h3>Dense retrieval only</h3><p>No keyword hybrid search or reranker, so exact technologies can be blurred.</p></div>
+    <div class="card"><h3>Thin profiles</h3><p>Built from repo names, descriptions, topics and languages. READMEs and bios are not ingested yet.</p></div>
+    <div class="card"><h3>Public data only</h3><p>Private work and offline skills are invisible. Stars reflect visibility, not skill.</p></div>
+    <div class="card"><h3>LLM can err</h3><p>Summaries are told to cite repositories, but can still misread. Verify on the profile.</p></div>
+    <div class="card"><h3>Free-tier limits</h3><p>Rate limits, cold starts and model changes mean slow or unavailable moments.</p></div>
+  </div>
+  <p class="hw"><b>Built on:</b> Ubuntu Linux laptop, 7.6 GB RAM (often under 2 GB free), 4 GB swap, CPU only, Python 3.12. The bulk embedding job was killed twice by the out-of-memory killer, so it now runs in small batches. Data came from BigQuery’s free tier and the GitHub API (5,000 requests per hour).</p>
+</div></section>
+
+<section class="slide"><div class="in">
+  <h2>Collaborate and contribute</h2>
+  <p class="lead">Pull requests are welcome from anyone. Open an issue first for large changes.</p>
+  <div class="cards">
+    <div class="card"><h3>Maintainer</h3><p><span class="ph">Your name</span> <span class="ph">role or school</span><br><span class="ph">1–2 lines of background</span><br><span class="ph">github.com/your-username</span><br><span class="ph">email or LinkedIn</span></p></div>
+    <div class="card"><h3>Skills used</h3><p>Python, SQL and BigQuery, REST APIs, sampling, embeddings and vector search, prompt grounding, FastAPI, debugging under memory limits.</p></div>
+    <div class="card"><h3>Help wanted</h3><ul><li>GPU or high-memory compute</li><li>Hybrid search and reranking</li><li>Evaluation set (recall@k, MRR)</li><li>Quality ranking from merged PRs</li><li>README and bio ingestion</li><li>Hosting and caching</li></ul></div>
+  </div>
+  <div class="btns">
+    <a class="btn" href="https://github.com/your-username/findmethecrackeddevs" target="_blank" rel="noopener">Repository</a>
+    <a class="btn o" href="https://github.com/your-username/findmethecrackeddevs/issues" target="_blank" rel="noopener">Open an issue</a>
+  </div>
+  <p class="fine">Flow: fork, branch, make one focused change, run the tests, open a PR explaining what changed and why. Include before-and-after results on the evaluation queries where relevant.</p>
+  <p class="fine">Searches a sample of public GitHub developers, not all developers and not all good ones. Uses public data only, never exposes emails, and should not be the sole basis for a hiring decision. Request removal by opening an issue.</p>
+</div></section>
+
 </div>
-<p style="margin-top:20px"><a class="btn" href="https://github.com/your-username/findmethecrackeddevs">View the repository</a><a class="btn o" href="https://github.com/your-username/findmethecrackeddevs/issues">Open an issue</a></p>
-<p style="color:var(--muted);font-size:14px">Contribution flow: fork, branch, make a focused change, run the tests, open a PR describing what changed and why. Evidence beats opinion, so include before-and-after results on the evaluation queries where relevant.</p>
-</div></section>
 
-<section id="structure"><div class="wrap">
-<h2>Repository structure</h2><p class="sub">Folders follow the pipeline stages, so each part can be tested, replaced and understood on its own.</p>
-<pre>findmethecrackeddevs/
-├── src/fmcd/
-│   ├── ingestion/    # GH Archive, GitHub API clients (I/O only)
-│   ├── processing/   # sampling, labelling, document building (pure functions)
-│   ├── retrieval/    # embeddings, vector store, search
-│   ├── generation/   # prompts, LLM client, report formatting
-│   ├── api/          # FastAPI app, schemas, rate limiting
-│   └── config.py     # all settings and paths in one place
-├── frontend/         # this page and the future search UI
-├── eval/             # test queries, expected results, scoring scripts
-├── tests/            # unit tests mirroring src/
-├── notebooks/        # exploration only, never imported by src
-├── scripts/          # run_pipeline.py and one-off jobs
-├── data/             # gitignored: raw, processed, vectors
-├── docs/             # design decisions, limitations, ethics
-├── .github/workflows/  # CI and scheduled refresh
-├── Dockerfile · requirements.txt · .env.example · pyproject.toml
-├── CONTRIBUTING.md · LICENSE · README.md</pre>
-</div></section>
-
-<footer><div class="wrap">
-<p><b>Ethics.</b> This tool searches a sample of public GitHub developers, not all developers and not all good developers. It uses only public data through official sources, never exposes emails, and should not be the sole basis for any hiring decision. Anyone can ask for removal by opening an issue.</p>
-<p>MIT licensed · Built as an AI-engineering learning project.</p>
-</div></footer>
+<div class="nav">
+  <button class="arrow" id="prev" aria-label="Previous">←</button>
+  <div class="dots" id="dots"></div>
+  <button class="arrow" id="next" aria-label="Next">→</button>
+</div>
+</main>
 
 <script>
-async function runSearch(query) {
-  const box = document.getElementById("report");
-  const btn = document.getElementById("run");
-  btn.disabled = true;
-  box.textContent = "Searching… this can take 5–15 seconds.";
-  box.classList.add("on");
-  try {
-    const res = await fetch("/api/search", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({query, k: 5}),
-    });
-    if (res.status === 429) { box.textContent = "Too many requests. Wait a minute."; return; }
-    if (res.status === 422) { box.textContent = "Please enter a request of 3 to 300 characters."; return; }
-    if (!res.ok) { box.textContent = "Something went wrong (" + res.status + "). Please retry."; return; }
-    const data = await res.json();
-    box.innerHTML = "";
-    data.results.forEach((r, i) => {
-      const d = document.createElement("div");
-      d.className = "res";
-      const h = document.createElement("h4");
-      const a = document.createElement("a");
-      a.href = r.github_url; a.target = "_blank"; a.rel = "noopener";
-      a.textContent = (i + 1) + ". " + r.login;
-      const tag = document.createElement("span");
-      tag.className = "tag " + r.fit; tag.textContent = r.fit + " fit";
-      h.append(a, " ", tag);
-      const p = document.createElement("p");
-      p.textContent = r.summary;
-      d.append(h, p);
-      box.append(d);
-    });
-  } catch (e) {
-    box.textContent = "Can’t reach the server.";
-  } finally {
-    btn.disabled = false;
+(function(){
+  var track=document.getElementById('track'),slides=track.children,tabs=document.querySelectorAll('.tab'),
+      dots=document.getElementById('dots'),prev=document.getElementById('prev'),next=document.getElementById('next'),cur=0;
+  for(var i=0;i<slides.length;i++){(function(n){var d=document.createElement('button');d.className='dot';d.setAttribute('aria-label','Go to slide '+(n+1));d.onclick=function(){go(n)};dots.appendChild(d);tabs[n].onclick=function(){go(n)}})(i)}
+  function go(n){
+    cur=Math.max(0,Math.min(slides.length-1,n));
+    track.style.transform='translateX('+(-100*cur)+'%)';
+    for(var i=0;i<slides.length;i++){
+      slides[i].inert=(i!==cur);
+      tabs[i].setAttribute('aria-selected',i===cur);
+      dots.children[i].className='dot'+(i===cur?' on':'');
+    }
+    prev.disabled=cur===0;next.disabled=cur===slides.length-1;
+    slides[cur].scrollTop=0;
   }
-}
+  prev.onclick=function(){go(cur-1)};next.onclick=function(){go(cur+1)};
+  document.addEventListener('keydown',function(e){
+    if(e.target.tagName==='INPUT')return;
+    if(e.key==='ArrowRight')go(cur+1);if(e.key==='ArrowLeft')go(cur-1);
+  });
+  var x0=null;
+  track.addEventListener('touchstart',function(e){x0=e.touches[0].clientX},{passive:true});
+  track.addEventListener('touchend',function(e){
+    if(x0===null)return;var dx=e.changedTouches[0].clientX-x0;x0=null;
+    if(Math.abs(dx)>70)go(cur+(dx<0?1:-1));
+  });
+  go(0);
 
-const input = document.getElementById("q");
-document.getElementById("run").addEventListener("click", () => runSearch(input.value.trim()));
-input.addEventListener("keydown", (e) => { if (e.key === "Enter") runSearch(input.value.trim()); });
-document.querySelectorAll(".chip").forEach((c) => {
-  c.addEventListener("click", () => { input.value = c.textContent; runSearch(c.textContent); });
-});
+  var input=document.getElementById('q'),btn=document.getElementById('run'),box=document.getElementById('report');
+  function say(t){box.innerHTML='';var d=document.createElement('div');d.className='msg';d.textContent=t;box.appendChild(d)}
+  async function runSearch(query){
+    if(query.length<3){box.className='on';say('Please enter at least 3 characters.');return}
+    btn.disabled=true;box.className='on';say('Searching… this can take 5–15 seconds.');
+    try{
+      var res=await fetch('/api/search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:query,k:5})});
+      if(res.status===429){say('Too many requests. Please wait a minute.');return}
+      if(res.status===422){say('Please enter a request of 3 to 300 characters.');return}
+      if(!res.ok){say('Something went wrong ('+res.status+'). Please retry.');return}
+      var data=await res.json();box.innerHTML='';
+      data.results.forEach(function(r,i){
+        var d=document.createElement('div');d.className='res';
+        var h=document.createElement('h4'),a=document.createElement('a');
+        a.href=r.github_url;a.target='_blank';a.rel='noopener';a.textContent=(i+1)+'. '+r.login;
+        var t=document.createElement('span');t.className='tag '+(['strong','partial','weak'].indexOf(r.fit)>-1?r.fit:'unknown');t.textContent=r.fit+' fit';
+        h.append(a,t);
+        var p=document.createElement('p');p.textContent=r.summary;
+        d.append(h,p);box.append(d);
+      });
+    }catch(e){say('Can’t reach the server.')}
+    finally{btn.disabled=false}
+  }
+  btn.addEventListener('click',function(){runSearch(input.value.trim())});
+  input.addEventListener('keydown',function(e){if(e.key==='Enter')runSearch(input.value.trim())});
+  document.querySelectorAll('.chip').forEach(function(c){c.addEventListener('click',function(){input.value=c.textContent;runSearch(c.textContent)})});
+})();
 </script>
 </body>
 </html>
