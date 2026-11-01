@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FindMeTheCrackedDevs: a RAG search engine for GitHub developers</title>
+<style>
+:root{--bg:#f6f7fb;--surface:#fff;--surface2:#eef0f7;--text:#14172b;--muted:#5b6078;--line:#dde0ee;--accent:#5b4bff;--accent2:#00b8a9;--warn:#b45309;--warnbg:#fff4e0;--code:#0f1226;--codetext:#d6dbff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b0d1a;--surface:#13162b;--surface2:#1b1f3a;--text:#eceefc;--muted:#9aa0c3;--line:#272c4f;--accent:#8b7dff;--accent2:#2fe0cf;--warn:#fbbf24;--warnbg:#2a2110;--code:#070812;--codetext:#c9d0ff}}
+:root[data-theme="dark"]{--bg:#0b0d1a;--surface:#13162b;--surface2:#1b1f3a;--text:#eceefc;--muted:#9aa0c3;--line:#272c4f;--accent:#8b7dff;--accent2:#2fe0cf;--warn:#fbbf24;--warnbg:#2a2110;--code:#070812;--codetext:#c9d0ff}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;align-items:center;gap:16px;height:56px}
+nav b{font-size:15px}nav a{color:var(--muted);text-decoration:none;font-size:14px}nav a:hover{color:var(--text)}
+.links{display:flex;gap:16px;margin-left:auto;overflow-x:auto;white-space:nowrap}
+.hero{padding:72px 0 40px;text-align:center}
+.pill{display:inline-block;padding:5px 12px;border:1px solid var(--line);border-radius:99px;font-size:12px;color:var(--muted);background:var(--surface);margin:0 4px 8px}
+.pill.w{color:var(--warn);background:var(--warnbg);border-color:transparent}
+h1{font-size:clamp(34px,6.5vw,62px);line-height:1.05;margin:14px 0;letter-spacing:-.03em}
+h1 span{background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{max-width:680px;margin:0 auto 28px;color:var(--muted);font-size:18px}
+.search{max-width:720px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:0 20px 60px -30px var(--accent);text-align:left}
+.row{display:flex;gap:10px}
+input{flex:1;min-width:0;padding:13px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text);font:inherit}
+button{font:inherit;cursor:pointer}
+.go{padding:0 20px;border:0;border-radius:10px;background:var(--accent);color:#fff;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chip{padding:6px 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface2);color:var(--text);font-size:13px}
+.chip:hover{border-color:var(--accent)}
+.note{margin:12px 2px 0;font-size:13px;color:var(--warn);background:var(--warnbg);padding:9px 12px;border-radius:9px}
+section{padding:52px 0}
+h2{font-size:30px;letter-spacing:-.02em;margin:0 0 8px}
+.sub{color:var(--muted);margin:0 0 28px;max-width:680px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px}
+.card h3{margin:0 0 6px;font-size:16px}.card p{margin:0;color:var(--muted);font-size:14.5px}
+.stat{font-size:34px;font-weight:700;letter-spacing:-.02em;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.card .lab{color:var(--muted);font-size:13px}
+.report{margin-top:18px;display:none}
+.report.on{display:block}
+.res{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px}
+.res h4{margin:0 0 2px;font-size:15px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tag{font-size:11px;padding:2px 8px;border-radius:99px;font-weight:600}
+.strong{background:#d7f7ef;color:#0a6b5a}.partial{background:#fff0cf;color:#8a5a00}.weak{background:#ffe0e0;color:#9b1c1c}
+.res p{margin:6px 0 0;font-size:14.5px;color:var(--muted)}
+.flow{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));counter-reset:s}
+.step{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;font-size:14px;counter-increment:s}
+.step::before{content:counter(s);display:block;width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;text-align:center;font-size:13px;line-height:24px;margin-bottom:8px}
+.step b{display:block}.step span{color:var(--muted);font-size:13px}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14.5px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-weight:600;font-size:13px}
+pre{background:var(--code);color:var(--codetext);padding:18px;border-radius:12px;overflow-x:auto;font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;margin:0}
+.ph{border:1px dashed var(--accent);border-radius:6px;padding:0 6px;color:var(--accent)}
+ul{padding-left:20px;color:var(--muted)}li{margin:5px 0}
+.btn{display:inline-block;padding:11px 18px;border-radius:10px;background:var(--accent);color:#fff;text-decoration:none;font-weight:600;margin:6px 8px 0 0}
+.btn.o{background:transparent;color:var(--text);border:1px solid var(--line)}
+footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--muted);font-size:13.5px}
+</style>
+</head>
+<body>
+<nav><div class="wrap"><b>🔎 FindMeTheCrackedDevs</b><div class="links"><a href="#demo">Demo</a><a href="#how">How it works</a><a href="#limits">Constraints</a><a href="#collab">Collaborate</a><a href="#structure">Structure</a></div></div></nav>
+
+<header class="hero"><div class="wrap">
+<span class="pill w">Professional software demo</span><span class="pill">Early build</span><span class="pill">Open source</span><span class="pill">Built on free tiers</span>
+<h1>Describe the developer you need. <span>Get evidence, not hype.</span></h1>
+<p class="lead">A retrieval-augmented generation (RAG) search engine over public GitHub developers. Recruiters write what they are looking for in plain English, and the system returns a short, source-cited report on the best matches.</p>
+
+<div class="search" id="demo">
+<div class="row"><input id="q" aria-label="Recruiter request" placeholder="e.g. a developer experienced in machine learning and large-scale systems"><button class="go" id="run">Preview</button></div>
+<div class="chips"><button class="chip">React frontend with Tailwind</button><button class="chip">Rust systems programmer</button><button class="chip">Builds Discord bots</button><button class="chip">Machine learning engineer</button></div>
+<div class="note"><b>Honest status:</b> this page is a showcase and does not call the live search API yet. The report below is an illustrative example of the output format, using placeholder names. It is not real data about real people.</div>
+<div class="report" id="report">
+<div class="res"><h4>1. example-dev-a <span class="tag strong">strong fit</span></h4><p>Maintains a component library built with React and Tailwind (see: ui kit) and a dashboard template (see: admin panel). Both are recent and have descriptions.</p></div>
+<div class="res"><h4>2. example-dev-b <span class="tag partial">partial fit</span></h4><p>Several React projects, but no repository mentions Tailwind (see: portfolio starter). Relevant to React, unproven for the styling requirement.</p></div>
+<div class="res"><h4>3. example-dev-c <span class="tag weak">weak fit</span></h4><p>Mostly mobile work. One web repository exists, with too little detail to judge.</p></div>
+</div>
+</div>
+</div></header>
+
+<section id="numbers"><div class="wrap">
+<h2>The project in numbers</h2><p class="sub">Small on purpose. Every figure is measured from this build, and every limit is listed further down.</p>
+<div class="grid">
+<div class="card"><div class="stat">~1,800</div><div class="lab">developers in the search index</div></div>
+<div class="card"><div class="stat">1.03M</div><div class="lab">active-account rows analysed to build the corpus</div></div>
+<div class="card"><div class="stat">17</div><div class="lab">developer domains used for stratified sampling</div></div>
+<div class="card"><div class="stat">384</div><div class="lab">dimensions per embedding vector</div></div>
+</div></div></section>
+
+<section id="how"><div class="wrap">
+<h2>How it works</h2><p class="sub">The pipeline is written by hand without LangChain, so every stage is visible and testable.</p>
+<div class="flow">
+<div class="step"><b>Find</b><span>Active accounts from GH Archive via BigQuery, bots removed</span></div>
+<div class="step"><b>Sample</b><span>Hash buckets for a reproducible pool, then stratified quotas per domain</span></div>
+<div class="step"><b>Fetch</b><span>Repo lists from the GitHub API with retries and rate-limit handling</span></div>
+<div class="step"><b>Embed</b><span>One text document per developer, BGE-small vectors</span></div>
+<div class="step"><b>Retrieve</b><span>Nearest-neighbour search in Chroma, with metadata filters</span></div>
+<div class="step"><b>Generate</b><span>LLM writes a JSON report that must cite repositories; links come from metadata</span></div>
+</div></div></section>
+
+<section id="limits"><div class="wrap">
+<h2>Constraints, stated plainly</h2><p class="sub">This is a learning project running on free infrastructure and a personal laptop. These limits shape what the demo can and cannot do.</p>
+<div class="grid">
+<div class="card"><h3>Small, biased corpus</h3><p>Only ~1,800 developers, drawn from accounts active in one 8-day window. The best person for your query may simply not be indexed.</p></div>
+<div class="card"><h3>Keyword-based labels</h3><p>Domains are assigned by a hand-written keyword dictionary. It is audited only lightly and misfiles some people. About 46% of the sampled pool was unclassifiable.</p></div>
+<div class="card"><h3>“Relevant” is not “best”</h3><p>Search measures similarity to your words. There is no quality or seniority ranking yet, so a vague query such as “best developer” returns people who sound relevant.</p></div>
+<div class="card"><h3>Dense retrieval only</h3><p>No keyword (BM25) hybrid search and no reranker yet, so exact technologies such as “Tailwind” can be missed or blurred.</p></div>
+<div class="card"><h3>Thin documents</h3><p>Profiles are built from repository names, descriptions, topics and languages. READMEs and bios are not ingested yet.</p></div>
+<div class="card"><h3>Public data, partial picture</h3><p>Private work, employer code and offline skills are invisible. Stars favour visibility, not skill. Treat every report as a lead, not a verdict.</p></div>
+<div class="card"><h3>LLM can be wrong</h3><p>The model is instructed to use only retrieved text and to cite repositories, but it can still misread. Always verify on the linked profile.</p></div>
+<div class="card"><h3>Free-tier limits</h3><p>The LLM and hosting run on free plans with rate limits, cold starts and model changes. Expect slow or unavailable moments.</p></div>
+</div>
+
+<h3 style="margin:34px 0 10px">Hardware this was built on</h3>
+<div class="scroll"><table>
+<tr><th>Resource</th><th>Value</th><th>Consequence</th></tr>
+<tr><td>RAM</td><td>7.6 GB total, often under 2 GB free</td><td>The bulk embedding job was killed twice by the Linux out-of-memory killer (a Python process at 3.8 GB). Embedding now runs in small batches.</td></tr>
+<tr><td>Swap</td><td>4 GB</td><td>Heavy use slows everything down.</td></tr>
+<tr><td>Compute</td><td>CPU only, no GPU used</td><td>Small embedding model (BGE-small); no local LLM; no large-scale re-embedding.</td></tr>
+<tr><td>OS and runtime</td><td>Ubuntu Linux, Python 3.12</td><td>Reproducible with a virtual environment and a pinned requirements file.</td></tr>
+<tr><td>Cloud</td><td>BigQuery free tier, GitHub API (5,000 requests per hour), free LLM tier</td><td>Ingestion is rationed: roughly 2,500 developers per hour at best.</td></tr>
+</table></div>
+</div></section>
+
+<section id="collab"><div class="wrap">
+<h2>Collaborate and contribute</h2><p class="sub">Pull requests are welcome from anyone. Open an issue first for large changes, so effort is not wasted.</p>
+<div class="grid">
+<div class="card"><h3>About the maintainer</h3>
+<p><span class="ph">Your name</span> · <span class="ph">your role or school</span><br>
+<span class="ph">1–2 lines on your background</span><br>
+GitHub: <span class="ph">github.com/your-username</span><br>
+Contact: <span class="ph">email or LinkedIn</span></p></div>
+<div class="card"><h3>Skills used in this project</h3><p>Python, SQL and BigQuery, REST APIs, data sampling, embeddings and vector search, prompt design and grounding, FastAPI, debugging under memory limits.</p></div>
+<div class="card"><h3>Help that would move it forward</h3>
+<ul><li>GPU or larger-memory compute for re-embedding</li><li>Hybrid search and a cross-encoder reranker</li><li>Evaluation set and labelling (recall@k, MRR)</li><li>Quality-signal ranking from merged PRs</li><li>README and bio ingestion</li><li>Hosting, caching and rate limiting</li></ul></div>
+</div>
+<p style="margin-top:20px"><a class="btn" href="https://github.com/your-username/findmethecrackeddevs">View the repository</a><a class="btn o" href="https://github.com/your-username/findmethecrackeddevs/issues">Open an issue</a></p>
+<p style="color:var(--muted);font-size:14px">Contribution flow: fork, branch, make a focused change, run the tests, open a PR describing what changed and why. Evidence beats opinion, so include before-and-after results on the evaluation queries where relevant.</p>
+</div></section>
+
+<section id="structure"><div class="wrap">
+<h2>Repository structure</h2><p class="sub">Folders follow the pipeline stages, so each part can be tested, replaced and understood on its own.</p>
+<pre>findmethecrackeddevs/
+├── src/fmcd/
+│   ├── ingestion/    # GH Archive, GitHub API clients (I/O only)
+│   ├── processing/   # sampling, labelling, document building (pure functions)
+│   ├── retrieval/    # embeddings, vector store, search
+│   ├── generation/   # prompts, LLM client, report formatting
+│   ├── api/          # FastAPI app, schemas, rate limiting
+│   └── config.py     # all settings and paths in one place
+├── frontend/         # this page and the future search UI
+├── eval/             # test queries, expected results, scoring scripts
+├── tests/            # unit tests mirroring src/
+├── notebooks/        # exploration only, never imported by src
+├── scripts/          # run_pipeline.py and one-off jobs
+├── data/             # gitignored: raw, processed, vectors
+├── docs/             # design decisions, limitations, ethics
+├── .github/workflows/  # CI and scheduled refresh
+├── Dockerfile · requirements.txt · .env.example · pyproject.toml
+├── CONTRIBUTING.md · LICENSE · README.md</pre>
+</div></section>
+
+<footer><div class="wrap">
+<p><b>Ethics.</b> This tool searches a sample of public GitHub developers, not all developers and not all good developers. It uses only public data through official sources, never exposes emails, and should not be the sole basis for any hiring decision. Anyone can ask for removal by opening an issue.</p>
+<p>MIT licensed · Built as an AI-engineering learning project.</p>
+</div></footer>
+
+<script>
+(function(){
+var q=document.getElementById('q'),r=document.getElementById('report');
+function show(){r.classList.add('on')}
+document.getElementById('run').addEventListener('click',show);
+document.querySelectorAll('.chip').forEach(function(c){c.addEventListener('click',function(){q.value=c.textContent;show()})});
+})();
+</script>
+</body>
+</html>
