@@ -169,12 +169,51 @@ Contact: <span class="ph">email or LinkedIn</span></p></div>
 </div></footer>
 
 <script>
-(function(){
-var q=document.getElementById('q'),r=document.getElementById('report');
-function show(){r.classList.add('on')}
-document.getElementById('run').addEventListener('click',show);
-document.querySelectorAll('.chip').forEach(function(c){c.addEventListener('click',function(){q.value=c.textContent;show()})});
-})();
+async function runSearch(query) {
+  const box = document.getElementById("report");
+  const btn = document.getElementById("run");
+  btn.disabled = true;
+  box.textContent = "Searching… this can take 5–15 seconds.";
+  box.classList.add("on");
+  try {
+    const res = await fetch("/api/search", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({query, k: 5}),
+    });
+    if (res.status === 429) { box.textContent = "Too many requests. Wait a minute."; return; }
+    if (res.status === 422) { box.textContent = "Please enter a request of 3 to 300 characters."; return; }
+    if (!res.ok) { box.textContent = "Something went wrong (" + res.status + "). Please retry."; return; }
+    const data = await res.json();
+    box.innerHTML = "";
+    data.results.forEach((r, i) => {
+      const d = document.createElement("div");
+      d.className = "res";
+      const h = document.createElement("h4");
+      const a = document.createElement("a");
+      a.href = r.github_url; a.target = "_blank"; a.rel = "noopener";
+      a.textContent = (i + 1) + ". " + r.login;
+      const tag = document.createElement("span");
+      tag.className = "tag " + r.fit; tag.textContent = r.fit + " fit";
+      h.append(a, " ", tag);
+      const p = document.createElement("p");
+      p.textContent = r.summary;
+      d.append(h, p);
+      box.append(d);
+    });
+  } catch (e) {
+    box.textContent = "Can’t reach the server.";
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+const input = document.getElementById("q");
+document.getElementById("run").addEventListener("click", () => runSearch(input.value.trim()));
+input.addEventListener("keydown", (e) => { if (e.key === "Enter") runSearch(input.value.trim()); });
+document.querySelectorAll(".chip").forEach((c) => {
+  c.addEventListener("click", () => { input.value = c.textContent; runSearch(c.textContent); });
+});
 </script>
 </body>
 </html>
