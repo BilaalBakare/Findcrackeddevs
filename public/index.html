@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FindCrackedDevs</title>
+<style>
+:root{--bg:#050505;--s1:#0d0d0d;--s2:#151515;--line:#222;--text:#ededed;--muted:#858585;--dim:#5a5a5a;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{display:flex;flex-direction:column;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+header{display:flex;align-items:center;gap:16px;padding:0 24px;height:56px;border-bottom:1px solid var(--line);flex:none}
+header b{font-weight:600;letter-spacing:-.01em;white-space:nowrap}
+.tabs{display:flex;gap:4px;margin-left:auto}
+.tab{background:none;border:0;color:var(--muted);padding:8px 12px;border-radius:8px;font:inherit;font-size:13.5px;cursor:pointer;white-space:nowrap}
+.tab:hover{color:var(--text)}.tab[aria-selected="true"]{color:var(--text);background:var(--s2)}
+.viewport{flex:1;min-height:0;overflow:hidden;position:relative}
+.track{display:flex;height:100%;transition:transform .5s cubic-bezier(.65,0,.2,1)}
+.slide{flex:0 0 100%;height:100%;overflow-y:auto;padding:48px 24px 90px}
+.in{max-width:860px;margin:0 auto}
+h1{font-size:clamp(30px,5vw,48px);line-height:1.1;letter-spacing:-.035em;margin:0 0 12px;font-weight:650}
+h2{font-size:clamp(26px,4vw,36px);letter-spacing:-.03em;margin:0 0 8px;font-weight:650}
+.lead{color:var(--muted);max-width:620px;margin:0 0 26px}
+.box{display:flex;gap:8px;background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:8px}
+.box:focus-within{border-color:#444}
+input{flex:1;min-width:0;background:none;border:0;outline:0;color:var(--text);font:inherit;padding:10px 12px}
+input::placeholder{color:var(--dim)}
+.go{background:var(--text);color:#000;border:0;border-radius:9px;padding:0 20px;font:inherit;font-weight:600;cursor:pointer}
+.go:disabled{opacity:.4;cursor:wait}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0}
+.chip{background:none;border:1px solid var(--line);color:var(--muted);border-radius:99px;padding:5px 12px;font:inherit;font-size:13px;cursor:pointer}
+.chip:hover{color:var(--text);border-color:#444}
+#report{margin-top:20px;display:none}#report.on{display:block}
+.msg{color:var(--muted);font-size:14px;padding:6px 2px}
+.res{background:var(--s1);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px}
+.res h4{margin:0;font-size:15px;font-weight:600;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.res a{color:var(--text);text-underline-offset:3px}
+.res p{margin:6px 0 0;color:var(--muted);font-size:14px}
+.tag{font-size:11px;padding:2px 8px;border-radius:99px;border:1px solid var(--line);font-weight:500}
+.strong{color:#5fd4a0;border-color:#1d4a38}.partial{color:#e0b64f;border-color:#4a3c14}.weak{color:#e07a7a;border-color:#4a1d1d}.unknown{color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:36px}
+.stat{background:var(--s1);padding:16px 18px}
+.stat b{display:block;font-size:26px;letter-spacing:-.03em;font-weight:650}
+.stat span{color:var(--muted);font-size:12.5px;line-height:1.4;display:block}
+.cards{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin:24px 0}
+.card{background:var(--s1);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card h3{margin:0 0 4px;font-size:14.5px;font-weight:600}.card p{margin:0;color:var(--muted);font-size:13.5px}
+.hw{font-size:13.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
+.hw b{color:var(--text);font-weight:600}
+.ph{border:1px dashed #444;border-radius:5px;padding:0 6px;color:var(--muted)}
+ul{margin:8px 0 0;padding-left:18px;color:var(--muted);font-size:13.5px}li{margin:3px 0}
+.btns{margin-top:6px}
+.btn{display:inline-block;padding:10px 18px;border-radius:10px;background:var(--text);color:#000;text-decoration:none;font-weight:600;font-size:14px;margin:0 8px 8px 0}
+.btn.o{background:none;color:var(--text);border:1px solid var(--line)}
+.fine{margin-top:22px;color:var(--dim);font-size:12.5px;max-width:700px}
+.nav{position:absolute;left:0;right:0;bottom:calc(14px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;align-items:center;gap:14px;pointer-events:none}
+.nav>*{pointer-events:auto}
+.arrow{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--s1);color:var(--text);cursor:pointer;font-size:16px}
+.arrow:hover{border-color:#555}.arrow:disabled{opacity:.25;cursor:default}
+.dots{display:flex;gap:8px}
+.dot{width:7px;height:7px;border-radius:50%;border:0;padding:0;background:#333;cursor:pointer}
+.dot.on{background:var(--text);width:20px;border-radius:4px}
+.skills{list-style:none;padding:0;margin:0}
+.skills li{margin:0 0 9px;font-size:13px;line-height:1.5}
+.skills b{color:var(--text);font-weight:600}
+@media(max-width:620px){header{padding:0 14px}header b{font-size:14px}.tab{padding:6px 8px;font-size:12.5px}.slide{padding:32px 16px 90px}}
+@media(prefers-reduced-motion:reduce){.track{transition:none}}
+</style>
+</head>
+<body>
+<header>
+  <b>FindCrackedDevs</b>
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab">Search</button>
+    <button class="tab" role="tab">Constraints</button>
+    <button class="tab" role="tab">C · C · C</button>
+  </div>
+</header>
+
+<main class="viewport">
+<div class="track" id="track">
+
+<section class="slide"><div class="in">
+  <h1>Describe the developer you need.</h1>
+  <p class="lead">Plain-English search over a sample of public GitHub developers. Every result links to the real profile and comes with cited evidence.</p>
+  <div class="box">
+    <input id="q" maxlength="300" aria-label="Recruiter request" placeholder="e.g. machine learning engineer with large-scale systems experience">
+    <button class="go" id="run">Search</button>
+  </div>
+  <div class="chips">
+    <button class="chip">React frontend with Tailwind</button>
+    <button class="chip">Rust systems programmer</button>
+    <button class="chip">Builds Discord bots</button>
+    <button class="chip">Machine learning engineer</button>
+  </div>
+  <div id="report" aria-live="polite"></div>
+  <div class="stats">
+    <div class="stat"><b>~1,800</b><span>developers in the index</span></div>
+    <div class="stat"><b>1.03M</b><span>active-account rows analysed</span></div>
+    <div class="stat"><b>17</b><span>developer domains sampled</span></div>
+    <div class="stat"><b>384</b><span>dimensions per embedding</span></div>
+  </div>
+</div></section>
+
+<section class="slide"><div class="in">
+  <h2>Constraints</h2>
+  <p class="lead">A demo built on free tiers and one laptop. These limits shape every result you see.</p>
+  <div class="cards">
+    <div class="card"><h3>Small, biased corpus</h3><p>~1,800 developers from accounts active in one 8-day window. The best match may not be indexed.</p></div>
+    <div class="card"><h3>Keyword labels</h3><p>Domains come from a hand-written dictionary with light auditing. About 46% of the sampled pool was unclassifiable.</p></div>
+    <div class="card"><h3>Relevant, not best</h3><p>Search measures similarity to your words. There is no quality or seniority ranking yet.</p></div>
+    <div class="card"><h3>Dense retrieval only</h3><p>No keyword hybrid search or reranker, so exact technologies can be blurred.</p></div>
+    <div class="card"><h3>Thin profiles</h3><p>Built from repo names, descriptions, topics and languages. READMEs and bios are not ingested yet.</p></div>
+    <div class="card"><h3>Public data only</h3><p>Private work and offline skills are invisible. Stars reflect visibility, not skill.</p></div>
+    <div class="card"><h3>LLM can err</h3><p>Summaries are told to cite repositories, but can still misread. Verify on the profile.</p></div>
+    <div class="card"><h3>Free-tier limits</h3><p>Rate limits, cold starts and model changes mean slow or unavailable moments.</p></div>
+  </div>
+  <p class="hw"><b>Built on:</b> Ubuntu Linux laptop, 7.6 GB RAM (often under 2 GB free), 4 GB swap, CPU only, Python 3.12. The bulk embedding job was killed twice by the out-of-memory killer, so it now runs in small batches. Data came from BigQuery’s free tier and the GitHub API (5,000 requests per hour).</p>
+</div></section>
+
+<section class="slide"><div class="in">
+  <h2>Connect, Collaborate, Contribute</h2>
+  <p class="lead">Pull requests are welcome from anyone. Open an issue first for large changes.</p>
+  <div class="cards">
+    <div class="card"><h3>Maintainer</h3><p class="who"><b>Bilaal Bakare</b><br>AI/ML engineer · RAG, embeddings and data pipelines<br><span class="open">Open to collaboration</span></p><p class="links"><a href="https://github.com/BilaalBakare" target="_blank" rel="noopener">GitHub</a> <a href="https://www.linkedin.com/in/bilaalbakare/" target="_blank" rel="noopener">LinkedIn</a> <a href="mailto:bilaalolushola@gmail.com">Email</a></p></div>
+    <div class="card"><h3>Skills utilized in project</h3><ul class="skills"><li><b>Data engineering:</b> BigQuery with dry-run cost checks and byte caps, GH Archive sampling, resumable GitHub API ingestion with retries and rate-limit handling</li><li><b>Sampling design:</b> reproducible hash-bucket pools, stratified quotas, a control sample held out for bias checks</li><li><b>Retrieval:</b> BGE embeddings, Chroma vector search, metadata filters</li><li><b>LLM engineering:</b> structured JSON output, evidence-cited summaries, prompt-injection awareness</li><li><b>Backend:</b> FastAPI with input validation, rate limiting, caching and mapped error codes</li><li><b>Debugging:</b> diagnosed out-of-memory kills and moved to chunked, resumable jobs</li></ul></div>
+  </div>
+  <div class="btns">
+    <a class="btn" href="https://github.com/BilaalBakare/findcrackeddevs" target="_blank" rel="noopener">Repository</a>
+    <a class="btn o" href="https://github.com/BilaalBakare/findcrackeddevs/issues" target="_blank" rel="noopener">Open an issue</a>
+  </div>
+  <p class="fine">Flow: fork, branch, make one focused change, run the tests, open a PR explaining what changed and why. Include before-and-after results on the evaluation queries where relevant.</p>
+  <p class="fine">Searches a sample of public GitHub developers, not all developers and not all good ones. Uses public data only, never exposes emails, and should not be the sole basis for a hiring decision. Request removal by opening an issue.</p>
+</div></section>
+
+</div>
+
+<div class="nav">
+  <button class="arrow" id="prev" aria-label="Previous">←</button>
+  <div class="dots" id="dots"></div>
+  <button class="arrow" id="next" aria-label="Next">→</button>
+</div>
+</main>
+
+<script>
+(function(){
+  var track=document.getElementById('track'),slides=track.children,tabs=document.querySelectorAll('.tab'),
+      dots=document.getElementById('dots'),prev=document.getElementById('prev'),next=document.getElementById('next'),cur=0;
+  for(var i=0;i<slides.length;i++){(function(n){var d=document.createElement('button');d.className='dot';d.setAttribute('aria-label','Go to slide '+(n+1));d.onclick=function(){go(n)};dots.appendChild(d);tabs[n].onclick=function(){go(n)}})(i)}
+  function go(n){
+    cur=Math.max(0,Math.min(slides.length-1,n));
+    track.style.transform='translateX('+(-100*cur)+'%)';
+    for(var i=0;i<slides.length;i++){
+      slides[i].inert=(i!==cur);
+      tabs[i].setAttribute('aria-selected',i===cur);
+      dots.children[i].className='dot'+(i===cur?' on':'');
+    }
+    prev.disabled=cur===0;next.disabled=cur===slides.length-1;
+    slides[cur].scrollTop=0;
+  }
+  prev.onclick=function(){go(cur-1)};next.onclick=function(){go(cur+1)};
+  document.addEventListener('keydown',function(e){
+    if(e.target.tagName==='INPUT')return;
+    if(e.key==='ArrowRight')go(cur+1);if(e.key==='ArrowLeft')go(cur-1);
+  });
+  var x0=null;
+  track.addEventListener('touchstart',function(e){x0=e.touches[0].clientX},{passive:true});
+  track.addEventListener('touchend',function(e){
+    if(x0===null)return;var dx=e.changedTouches[0].clientX-x0;x0=null;
+    if(Math.abs(dx)>70)go(cur+(dx<0?1:-1));
+  });
+  go(0);
+
+  var input=document.getElementById('q'),btn=document.getElementById('run'),box=document.getElementById('report');
+  function say(t){box.innerHTML='';var d=document.createElement('div');d.className='msg';d.textContent=t;box.appendChild(d)}
+  async function runSearch(query){
+    if(query.length<3){box.className='on';say('Please enter at least 3 characters.');return}
+    btn.disabled=true;box.className='on';say('Searching… this can take 5–15 seconds.');
+    try{
+      var res=await fetch('/api/search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:query,k:5})});
+      if(res.status===429){say('Too many requests. Please wait a minute.');return}
+      if(res.status===422){say('Please enter a request of 3 to 300 characters.');return}
+      if(!res.ok){say('Something went wrong ('+res.status+'). Please retry.');return}
+      var data=await res.json();box.innerHTML='';
+      data.results.forEach(function(r,i){
+        var d=document.createElement('div');d.className='res';
+        var h=document.createElement('h4'),a=document.createElement('a');
+        a.href=r.github_url;a.target='_blank';a.rel='noopener';a.textContent=(i+1)+'. '+r.login;
+        var t=document.createElement('span');t.className='tag '+(['strong','partial','weak'].indexOf(r.fit)>-1?r.fit:'unknown');t.textContent=r.fit+' fit';
+        h.append(a,t);
+        var p=document.createElement('p');p.textContent=r.summary;
+        d.append(h,p);box.append(d);
+      });
+    }catch(e){say('Can’t reach the server.')}
+    finally{btn.disabled=false}
+  }
+  btn.addEventListener('click',function(){runSearch(input.value.trim())});
+  input.addEventListener('keydown',function(e){if(e.key==='Enter')runSearch(input.value.trim())});
+  document.querySelectorAll('.chip').forEach(function(c){c.addEventListener('click',function(){input.value=c.textContent;runSearch(c.textContent)})});
+})();
+</script>
+</body>
+</html>
