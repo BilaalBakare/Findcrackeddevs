@@ -1,5 +1,8 @@
 data/
 node_modules/
+.wrangler/
+.dev.vars
+env.yaml
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
